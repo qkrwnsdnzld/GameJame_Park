@@ -17,7 +17,7 @@ public class Spawner : MonoBehaviour
     [Header("Timing")]
     public float startInterval = 1.0f;     // 시작 간격(초)
     public float minInterval = 0.25f;      // 최소 간격 바닥
-    public float intervalDecayPerSec = 0.02f; // 초당 간격 감소량
+    public float intervalDecayPerSec = 0.0001f; // 초당 간격 감소량
 
     float timer;
     float nextTime;
@@ -32,8 +32,8 @@ public class Spawner : MonoBehaviour
     {
         timer += Time.deltaTime;
 
-        // 시간이 지날수록 간격 줄이기
-        float curInterval = Mathf.Max(minInterval, startInterval - intervalDecayPerSec * timer);
+        // 간격 고정
+        float curInterval = startInterval;
 
         if (Time.time >= nextTime)
         {
@@ -42,21 +42,47 @@ public class Spawner : MonoBehaviour
         }
     }
 
+    int lastEmptyLane = -1; // 이전에 비워둔 레인 인덱스 저장
+
     void SpawnOne()
     {
-        // 레인 랜덤
-        float z = lanesZ[Random.Range(0, lanesZ.Length)];
-        Vector3 pos = new Vector3(spawnX, y, z);
+        float doubleObstacleChance = 0.2f;
 
-        // 코인/장애물 선택
-        GameObject prefab = (Random.value < coinChance) ? coinPrefab : obstaclePrefab;
-        if (prefab == null)
+        if (Random.value < doubleObstacleChance)
         {
-            Debug.LogWarning("Spawner: prefab이 비어 있어요.");
-            return;
-        }
+            int emptyLane;
+            do
+            {
+                emptyLane = Random.Range(0, lanesZ.Length);
+            } while (emptyLane == lastEmptyLane); // 이전과 같은 패턴 방지
 
-        // 생성 (현재 단계는 Instantiate만 사용)
-        Instantiate(prefab, pos, Quaternion.identity);
+            lastEmptyLane = emptyLane;
+
+            for (int i = 0; i < lanesZ.Length; i++)
+            {
+                if (i == emptyLane) continue;
+                Vector3 pos = new Vector3(spawnX, y, lanesZ[i]);
+                Instantiate(obstaclePrefab, pos, Quaternion.identity);
+            }
+        }
+        else
+        {
+            int lane;
+            do
+            {
+                lane = Random.Range(0, lanesZ.Length);
+            } while (lane == lastEmptyLane); // 이전과 같은 패턴 방지
+
+            lastEmptyLane = lane;
+
+            Vector3 pos = new Vector3(spawnX, y, lanesZ[lane]);
+            GameObject prefab = (Random.value < coinChance) ? coinPrefab : obstaclePrefab;
+            if (prefab == null)
+            {
+                Debug.LogWarning("Spawner: prefab이 비어 있어요.");
+                return;
+            }
+            Instantiate(prefab, pos, Quaternion.identity);
+        }
     }
 }

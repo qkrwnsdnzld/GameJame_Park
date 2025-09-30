@@ -38,6 +38,10 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(playerX, p.y, targetZ);
     }
 
+    [Header("Speed Up")]
+    public float speedUpPerSec = 0.2f; // 초당 속도 증가량
+    public float maxLaneLerpSpeed = 30f; // 최대 속도 제한
+
     void Update()
     {
         // 입력 처리 (Both 설정이면 둘 다 컴파일됨)
@@ -52,6 +56,8 @@ public class PlayerController : MonoBehaviour
         var p = transform.position;
         float z = Mathf.Lerp(p.z, targetZ, Time.deltaTime * laneLerpSpeed);
         transform.position = new Vector3(playerX, p.y, z);
+
+        laneLerpSpeed = Mathf.Min(laneLerpSpeed + speedUpPerSec * Time.deltaTime, maxLaneLerpSpeed);
     }
 
     private void MoveLane(int delta)
