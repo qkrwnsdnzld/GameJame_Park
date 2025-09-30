@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour
     }
 
     [Header("Speed Up")]
-    public float speedUpPerSec = 0.2f; // 초당 속도 증가량
+    public float speedUpPerSec = 2f; // 초당 속도 증가량
     public float maxLaneLerpSpeed = 30f; // 최대 속도 제한
 
     void Update()
